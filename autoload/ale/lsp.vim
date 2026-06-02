@@ -625,7 +625,7 @@ function! s:SendInitMessage(conn) abort
     \               'completion': {
     \                   'dynamicRegistration': v:false,
     \                   'completionItem': {
-    \                       'snippetSupport': v:false,
+    \                       'snippetSupport': v:true,
     \                       'commitCharactersSupport': v:false,
     \                       'documentationFormat': ['plaintext', 'markdown'],
     \                       'deprecatedSupport': v:false,
