@@ -934,8 +934,10 @@ function! ale#completion#GetCompletions(...) abort
     return l:started
 endfunction
 
-function! s:message(message) abort
-    call ale#util#Execute('echom ' . string(a:message))
+function! s:message(...) abort
+    let l:message = get(a:000, 0, '')
+    let l:mode = get(a:000, 1, 'msg')
+    call ale#util#Execute('echo' . l:mode . ' ' . string(l:message))
 endfunction
 
 " This function implements the :ALEImport command.
@@ -995,8 +997,7 @@ function! ale#completion#OmniFunc(findstart, base) abort
             endif
 
             if l:timer_current > l:timeout
-                " no-custom-checks
-                echoerr 'no result within timeout (' . l:timeout . 's)'
+                call s:message('no result within timeout (' . l:timeout . 's)', 'err')
                 break
             endif
 
