@@ -793,6 +793,12 @@ function! ale#completion#HandleLSPResponse(conn_id, response) abort
 endfunction
 
 function! s:OnReady(linter, lsp_details) abort
+    " Return if the buffer has been switched during startup
+    " TODO Do not use buffer variables to pass infos to callbacks
+    if !exists('b:ale_completion_info')
+        return
+    endif
+
     let l:id = a:lsp_details.connection_id
 
     if !ale#lsp#HasCapability(l:id, 'completion')
