@@ -980,18 +980,27 @@ function! ale#completion#OmniFunc(findstart, base) abort
     else
         let l:result = ale#completion#GetCompletionResult()
 
+        let l:startup = get(g:, 'ale_completion_startup', 0.01)
         let l:timeout = get(g:, 'ale_completion_timeout', 3)
-        let l:timeout_start = reltime()
+        let l:timer_start = reltime()
 
         while l:result is v:null && !complete_check()
             sleep 2ms
-            let l:result = ale#completion#GetCompletionResult()
 
-            if reltimefloat(reltime(l:timeout_start)) > l:timeout
+            let l:timer_current = reltimefloat(reltime(l:timer_start))
+
+            if (!exists('b:ale_completion_info') || b:ale_completion_info.conn_id is# 0)
+            \&& l:timer_current > l:startup
+                break
+            endif
+
+            if l:timer_current > l:timeout
                 " no-custom-checks
                 echoerr 'no result within timeout (' . l:timeout . 's)'
                 break
             endif
+
+            let l:result = ale#completion#GetCompletionResult()
         endwhile
 
         return l:result isnot v:null ? l:result : []
