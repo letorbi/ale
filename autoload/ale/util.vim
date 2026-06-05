@@ -557,9 +557,9 @@ function! ale#util#GetBufferContents(buffer) abort
 endfunction
 
 function! ale#util#GetBufferEnd(buffer) abort
-    let line = len(getbufline(a:buffer, 1, '$'))
-    let character = strchars(getbufoneline(a:buffer, '$'))
-    return [line, character]
+    let l:line = len(getbufline(a:buffer, 1, '$'))
+    let l:character = strchars(getbufoneline(a:buffer, '$'))
+    return [l:line, l:character]
 endfunction
 
 function! ale#util#ToURI(resource) abort

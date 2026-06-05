@@ -52,6 +52,11 @@ function! ale#lsp#message#Exit() abort
 endfunction
 
 function! ale#lsp#message#DidOpen(buffer, language_id) abort
+    " Initalize the range end for first 'textDocument/didChange' message.
+    " LSP starts counting with zero and excludes the range end, therefore
+    " the actual end has to be the first char of the last line plus one.
+    let b:ale_lsp_change_end = [ale#util#GetBufferEnd(a:buffer)[0], 0]
+
     return [1, 'textDocument/didOpen', {
     \   'textDocument': {
     \       'uri': ale#util#ToURI(expand('#' . a:buffer . ':p')),
@@ -63,8 +68,9 @@ function! ale#lsp#message#DidOpen(buffer, language_id) abort
 endfunction
 
 function! ale#lsp#message#DidChange(buffer) abort
-    " For changes, we simply send the full text of the document to the server.
-    let end = ale#util#GetBufferEnd(a:buffer)
+    " Update the range end for the next 'textDocument/didChange' message.
+    let l:end = b:ale_lsp_change_end
+    let b:ale_lsp_change_end = [ale#util#GetBufferEnd(a:buffer)[0], 0]
 
     return [1, 'textDocument/didChange', {
     \   'textDocument': {
@@ -74,7 +80,7 @@ function! ale#lsp#message#DidChange(buffer) abort
     \   'contentChanges': [{
     \       'range': {
     \           'start': { 'line': 0, 'character': 0 },
-    \           'end': { 'line': end[0], 'character': end[1] }
+    \           'end': { 'line': l:end[0], 'character': l:end[1] }
     \       },
     \       'text': ale#util#GetBufferContents(a:buffer)
     \   }]
@@ -97,6 +103,9 @@ function! ale#lsp#message#DidSave(buffer, include_text) abort
 endfunction
 
 function! ale#lsp#message#DidClose(buffer) abort
+    " Remove the range end for the next 'textDocument/didChange' message.
+    unlet b:ale_lsp_change_end
+
     return [1, 'textDocument/didClose', {
     \   'textDocument': {
     \       'uri': ale#util#ToURI(expand('#' . a:buffer . ':p')),
