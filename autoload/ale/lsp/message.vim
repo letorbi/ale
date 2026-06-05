@@ -64,12 +64,20 @@ endfunction
 
 function! ale#lsp#message#DidChange(buffer) abort
     " For changes, we simply send the full text of the document to the server.
+    let end = ale#util#GetBufferEnd(a:buffer)
+
     return [1, 'textDocument/didChange', {
     \   'textDocument': {
     \       'uri': ale#util#ToURI(expand('#' . a:buffer . ':p')),
     \       'version': ale#lsp#message#GetNextVersionID(),
     \   },
-    \   'contentChanges': [{'text': ale#util#GetBufferContents(a:buffer)}]
+    \   'contentChanges': [{
+    \       'range': {
+    \           'start': { 'line': 0, 'character': 0 },
+    \           'end': { 'line': end[0], 'character': end[1] }
+    \       },
+    \       'text': ale#util#GetBufferContents(a:buffer)
+    \   }]
     \}]
 endfunction
 
