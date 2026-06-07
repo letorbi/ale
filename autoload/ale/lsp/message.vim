@@ -55,7 +55,7 @@ function! ale#lsp#message#DidOpen(buffer, language_id) abort
     " Initalize the range end for first 'textDocument/didChange' message.
     " LSP starts counting with zero and excludes the range end, therefore
     " the actual end has to be the first char of the last line plus one.
-    let b:ale_lsp_change_end = [ale#util#GetBufferEnd(a:buffer)[0], 0]
+    let b:ale_lsp_range_end = [ale#util#GetBufferLines(a:buffer), 0]
 
     return [1, 'textDocument/didOpen', {
     \   'textDocument': {
@@ -69,8 +69,8 @@ endfunction
 
 function! ale#lsp#message#DidChange(buffer) abort
     " Update the range end for the next 'textDocument/didChange' message.
-    let l:end = b:ale_lsp_change_end
-    let b:ale_lsp_change_end = [ale#util#GetBufferEnd(a:buffer)[0], 0]
+    let l:end = b:ale_lsp_range_end
+    let b:ale_lsp_range_end = [ale#util#GetBufferLines(a:buffer), 0]
 
     return [1, 'textDocument/didChange', {
     \   'textDocument': {
@@ -104,7 +104,7 @@ endfunction
 
 function! ale#lsp#message#DidClose(buffer) abort
     " Remove the range end for the next 'textDocument/didChange' message.
-    unlet b:ale_lsp_change_end
+    unlet b:ale_lsp_range_end
 
     return [1, 'textDocument/didClose', {
     \   'textDocument': {

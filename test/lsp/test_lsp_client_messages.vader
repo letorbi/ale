@@ -39,8 +39,8 @@ Given typescript(A TypeScript file with 3 lines):
 Execute(ale#util#GetBufferContents() should return correctly formatted newlines):
   AssertEqual "Foo()\nBar()\nBaz()\n", ale#util#GetBufferContents(bufnr(''))
 
-Execute(ale#util#GetBufferEnd() should return correct line and character count):
-  AssertEqual [3, 5], ale#util#GetBufferEnd(bufnr(''))
+Execute(ale#util#GetBufferLines() should return correct line count):
+  AssertEqual 3, ale#util#GetBufferLines(bufnr(''))
 
 Execute(ale#lsp#message#DidOpen() should return correct messages):
   let g:ale_lsp_next_version_id = 12
@@ -74,7 +74,7 @@ Execute(ale#lsp#message#DidChange() should return correct messages):
   \     'contentChanges': [{
   \         'range': {
   \           'start': { 'line': 0, 'character': 0 },
-  \           'end': { 'line': 3, 'character': 5 }
+  \           'end': { 'line': 3, 'character': 0 }
   \         },
   \         'text': "Foo()\nBar()\nBaz()\n"
   \     }],
