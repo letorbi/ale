@@ -284,10 +284,14 @@ function! ale#lsp_linter#HandleLSPResponse(conn_id, response) abort
         let l:items = get(get(a:response, 'params', {}), 'items', [])
         let l:config = ale#lsp#GetConnectionConfig(a:conn_id)
         call ale#lsp#SendResponse(a:conn_id, a:response.id, map(copy(l:items), 'l:config'))
-    elseif l:method is# 'window/showMessage' | l:method is# 'window/logMessage'
+    elseif l:method is# 'window/logMessage'
+        call ale#lsp_window#HandleLogMessage(
+        \   s:lsp_linter_map[a:conn_id].name,
+        \   a:response.params
+        \)
+    elseif l:method is# 'window/showMessage'
         call ale#lsp_window#HandleShowMessage(
         \   s:lsp_linter_map[a:conn_id].name,
-        \   g:ale_lsp_show_message_format,
         \   a:response.params
         \)
     elseif empty(l:method) && has_key(s:diagnostic_uri_map, get(a:response, 'id'))

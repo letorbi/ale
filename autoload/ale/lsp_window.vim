@@ -20,13 +20,7 @@ let s:CFG_TO_LSP_SEVERITY = {
 \   'log': s:LSP_MESSAGE_TYPE_LOG
 \}
 
-" Handle window/showMessage response.
-" - details: dict containing linter name and format (g:ale_lsp_show_message_format)
-" - params: dict with the params for the call in the form of {type: number, message: string}
-function! ale#lsp_window#HandleShowMessage(linter_name, format, params) abort
-    let l:message = a:params.message
-    let l:type = a:params.type
-
+function! s:formatMessage(linter_name, message, type)
     " Get the configured severity level threshold and check if the message
     " should be displayed or not
     let l:configured_severity = tolower(get(g:, 'ale_lsp_show_message_severity', 'error'))
@@ -34,25 +28,44 @@ function! ale#lsp_window#HandleShowMessage(linter_name, format, params) abort
     " dict, fall back to warning
     let l:cfg_severity_threshold = get(s:CFG_TO_LSP_SEVERITY, l:configured_severity, s:LSP_MESSAGE_TYPE_WARNING)
 
-    if l:type > l:cfg_severity_threshold
-        return
+    if a:type > l:cfg_severity_threshold
+        return v:null
     endif
 
     " Severity will depend on the message type
-    if l:type is# s:LSP_MESSAGE_TYPE_ERROR
+    if a:type is# s:LSP_MESSAGE_TYPE_ERROR
         let l:severity = g:ale_echo_msg_error_str
-    elseif l:type is# s:LSP_MESSAGE_TYPE_INFORMATION
+    elseif a:type is# s:LSP_MESSAGE_TYPE_INFORMATION
         let l:severity = g:ale_echo_msg_info_str
-    elseif l:type is# s:LSP_MESSAGE_TYPE_LOG
+    elseif a:type is# s:LSP_MESSAGE_TYPE_LOG
         let l:severity = g:ale_echo_msg_log_str
     else
         " Default to warning just in case
         let l:severity = g:ale_echo_msg_warning_str
     endif
 
-    let l:string = substitute(a:format, '\V%severity%', l:severity, 'g')
+    let l:string = g:ale_lsp_show_message_format
+    let l:string = substitute(l:string, '\V%severity%', l:severity, 'g')
     let l:string = substitute(l:string, '\V%linter%', a:linter_name, 'g')
-    let l:string = substitute(l:string, '\V%s\>', l:message, 'g')
+    let l:string = substitute(l:string, '\V%s\>', a:message, 'g')
 
-    call ale#util#ShowMessage(l:string)
+    return l:string
+endfunction
+
+" Handle window/showMessage response.
+" - params: dict with the params for the call in the form of {type: number, message: string}
+function! ale#lsp_window#HandleLogMessage(linter_name, params) abort
+    let l:string = s:formatMessage(a:linter_name,a:params.message, a:params.type)
+    if l:string isnot# v:null
+        echomsg l:string
+    endif
+endfunction
+
+" Handle window/showMessage response.
+" - params: dict with the params for the call in the form of {type: number, message: string}
+function! ale#lsp_window#HandleShowMessage(linter_name, params) abort
+    let l:string = s:formatMessage(a:linter_name, a:params.message, a:params.type)
+    if l:string isnot# v:null
+        call ale#util#ShowMessage(l:string)
+    endif
 endfunction
