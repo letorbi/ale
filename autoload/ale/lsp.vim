@@ -966,13 +966,17 @@ function! ale#lsp#NotifyForChanges(conn_id, buffer) abort
         let l:new_tick = getbufvar(a:buffer, 'changedtick')
 
         if l:conn.open_documents[a:buffer] < l:new_tick
-            if l:conn.is_tsserver
-                let l:message = ale#lsp#tsserver_message#Change(a:buffer)
-            else
-                let l:message = ale#lsp#message#DidChange(a:buffer)
+            " Neovim handles didChange notifications on its own
+            if !g:ale_use_neovim_lsp_api
+                if l:conn.is_tsserver
+                    let l:message = ale#lsp#tsserver_message#Change(a:buffer)
+                else
+                    let l:message = ale#lsp#message#DidChange(a:buffer)
+                endif
+
+                call ale#lsp#Send(a:conn_id, l:message)
             endif
 
-            call ale#lsp#Send(a:conn_id, l:message)
             let l:conn.open_documents[a:buffer] = l:new_tick
             let l:notified = 1
         endif
