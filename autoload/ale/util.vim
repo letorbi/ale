@@ -556,6 +556,10 @@ function! ale#util#GetBufferContents(buffer) abort
     return join(getbufline(a:buffer, 1, '$'), "\n") . "\n"
 endfunction
 
+function! ale#util#GetBufferLines(buffer) abort
+    return len(getbufline(a:buffer, 1, '$'))
+endfunction
+
 function! ale#util#ToURI(resource) abort
     let l:uri_handler = ale#uri#GetURIHandler(a:resource)
 
